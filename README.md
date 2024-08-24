@@ -55,13 +55,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/task_manager
     username: your_db_username
     password: your_db_password
-  jpa:
+    driver-class-name: org.postgresql.Driver
+ jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-  security:
-    jwt:
-      secret: your_jwt_secret
-      expiration: 3600
-  server:
-    port: 8080
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  profiles:
+    active: default
+
+
+
