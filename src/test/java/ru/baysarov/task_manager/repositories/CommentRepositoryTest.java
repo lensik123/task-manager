@@ -20,7 +20,6 @@ import ru.baysarov.task_manager.models.User;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-
 public class CommentRepositoryTest {
 
   @Autowired

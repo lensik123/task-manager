@@ -25,6 +25,8 @@ public class TasksService {
   private final TaskRepository taskRepository;
   private final UserRepository userRepository;
 
+  private SecurityUtils securityUtils;
+
   @Autowired
   public TasksService(TaskRepository taskRepository, UserRepository userRepository) {
     this.taskRepository = taskRepository;
