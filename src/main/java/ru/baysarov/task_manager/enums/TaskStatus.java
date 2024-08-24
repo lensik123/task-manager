@@ -4,6 +4,4 @@ public enum TaskStatus {
   WAITING,
   IN_PROCESS,
   DONE
-
-
 }

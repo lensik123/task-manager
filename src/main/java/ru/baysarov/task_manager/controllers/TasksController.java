@@ -23,6 +23,7 @@ import ru.baysarov.task_manager.dto.TaskDTO;
 import ru.baysarov.task_manager.dto.TasksResponse;
 import ru.baysarov.task_manager.models.Task;
 import ru.baysarov.task_manager.services.TasksService;
+import ru.baysarov.task_manager.validators.TaskValidator;
 
 
 @RestController
@@ -30,11 +31,14 @@ import ru.baysarov.task_manager.services.TasksService;
 public class TasksController {
 
   private final TasksService tasksService;
+  private final TaskValidator taskValidator;
   private final ModelMapper modelMapper;
 
   @Autowired
-  public TasksController(TasksService tasksService, ModelMapper modelMapper) {
+  public TasksController(TasksService tasksService, TaskValidator taskValidator,
+      ModelMapper modelMapper) {
     this.tasksService = tasksService;
+    this.taskValidator = taskValidator;
     this.modelMapper = modelMapper;
   }
 
@@ -58,8 +62,9 @@ public class TasksController {
   public ResponseEntity<?> createTask(@RequestBody @Valid TaskDTO taskDTO,
       BindingResult bindingResult) {
     ResponseEntity<?> errors = getResponseEntity(bindingResult);
-    if (errors != null)
+    if (errors != null) {
       return errors;
+    }
 
     tasksService.save(convertToTask(taskDTO));
     return ResponseEntity.ok(HttpStatus.CREATED);
@@ -79,8 +84,21 @@ public class TasksController {
     return ResponseEntity.ok(HttpStatus.OK);
   }
 
+  @PatchMapping("/{id}")
+  public ResponseEntity<?> update(@PathVariable int id,
+      @RequestBody @Valid TaskDTO taskDTO, BindingResult bindingResult) {
+    Task task = convertToTask(taskDTO);
+    ResponseEntity<?> errors = getResponseEntity(bindingResult);
+    if (errors != null) {
+      return errors;
+    }
+    taskValidator.validate(task, bindingResult);
+    tasksService.update(id, task);
+    return ResponseEntity.ok(HttpStatus.OK);
+  }
+
   @DeleteMapping("/{id}")
-  public ResponseEntity<HttpStatus> deleteTaskById(@PathVariable int id) {
+  public ResponseEntity<?> deleteTaskById(@PathVariable int id) {
     tasksService.delete(id);
     return ResponseEntity.ok(HttpStatus.OK);
   }
@@ -89,9 +107,9 @@ public class TasksController {
 
   public TaskDTO convertTaskDTO(Task task) {
     TaskDTO taskDTO = modelMapper.map(task, TaskDTO.class);
-    taskDTO.setAssignee(task.getAssignee().getEmail());
     return taskDTO;
   }
+
   public Task convertToTask(TaskDTO taskDTO) {
     return modelMapper.map(taskDTO, Task.class);
   }
