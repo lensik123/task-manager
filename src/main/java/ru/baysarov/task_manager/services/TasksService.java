@@ -62,15 +62,11 @@ public class TasksService {
     taskRepository.deleteById(id);
   }
 
-
   @Transactional
-  public void updateStatus(int taskId, String status) {
-
+  public void updateStatus(int taskId, TaskStatus updatedStatus) {
     String userEmail = SecurityUtils.getCurrentUserEmail();
-
     User currentUser = userRepository.findByEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException("User " + userEmail + " not found"));
-
     Task existingTask = taskRepository.findById(taskId)
         .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found"));
 
@@ -79,16 +75,7 @@ public class TasksService {
       throw new TaskAccessException("You must be the author or assignee of the task to update it.");
     }
 
-    TaskStatus taskStatus;
-    try {
-      taskStatus = TaskStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid status value: " + status + " Must be WAITING,\n"
-          + "  IN_PROCESS,\n"
-          + "  or DONE\n");
-    }
-
-    existingTask.setStatus(taskStatus);
+    existingTask.setStatus(updatedStatus);
     taskRepository.save(existingTask);
   }
 
@@ -108,6 +95,7 @@ public class TasksService {
     return taskRepository.findAllByAssigneeId(assigneeId);
   }
 
+  @Transactional
   public void update(int id, Task updatedTask) {
     updatedTask.setId(id);
     taskRepository.save(updatedTask);
@@ -124,7 +112,7 @@ public class TasksService {
     } else if (assigneeId != null) {
       return taskRepository.findByAssigneeId(assigneeId, pageable);
     } else {
-      return taskRepository.findAll();
+      return taskRepository.findAll(pageable).stream().toList();
     }
 
   }
