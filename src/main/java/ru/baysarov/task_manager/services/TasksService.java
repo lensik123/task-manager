@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.baysarov.task_manager.enums.TaskStatus;
+import ru.baysarov.task_manager.exceptions.TaskAccessException;
 import ru.baysarov.task_manager.exceptions.TaskNotFoundException;
 import ru.baysarov.task_manager.exceptions.UserNotFoundException;
 import ru.baysarov.task_manager.models.Task;
@@ -48,6 +49,7 @@ public class TasksService {
         .orElseThrow(() -> new UserNotFoundException("User " + userEmail + " not found"));
 
     task.setAuthor(author);
+    task.setStatus(TaskStatus.WAITING);
 
     tasksRepository.save(task);
   }
@@ -64,22 +66,18 @@ public class TasksService {
 
     String userEmail = SecurityUtils.getCurrentUserEmail();
 
-    User user = userRepository.findByEmail(userEmail)
+    User currentUser = userRepository.findByEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException("User " + userEmail + " not found"));
 
     Task existingTask = tasksRepository.findById(taskId)
         .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found"));
 
-    if (!existingTask.getAssignee().equals(user)) {
-      throw new UserNotFoundException("User " + userEmail + " not found");
+    if (!existingTask.getAssignee().equals(currentUser) && !existingTask.getAuthor()
+        .equals(currentUser)) {
+      throw new TaskAccessException("You must be the author or assignee of the task to update it.");
     }
 
-
-
     TaskStatus taskStatus;
-
-
-
     try {
       taskStatus = TaskStatus.valueOf(status.toUpperCase());
     } catch (IllegalArgumentException e) {
@@ -106,5 +104,10 @@ public class TasksService {
 
   public List<Task> findAllByAssigneeId(int assigneeId) {
     return tasksRepository.findAllByAssigneeId(assigneeId);
+  }
+
+  public void update(int id, Task updatedTask) {
+    updatedTask.setId(id);
+    tasksRepository.save(updatedTask);
   }
 }

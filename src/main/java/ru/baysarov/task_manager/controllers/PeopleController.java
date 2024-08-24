@@ -16,7 +16,7 @@ import ru.baysarov.task_manager.services.TasksService;
 import ru.baysarov.task_manager.services.UsersServIce;
 
 @RestController
-@RequestMapping("/api/v1/people")
+@RequestMapping("/api/v1/personal")
 public class PeopleController {
 
   private final UsersServIce usersServIce;
@@ -31,7 +31,7 @@ public class PeopleController {
     this.modelMapper = modelMapper;
   }
 
-  @GetMapping("/{id}/tasks")
+  @GetMapping("/user/{id}/tasks")
   public TasksResponse getTasks(@PathVariable("id") int assigneeId) {
 
     return new TasksResponse(tasksService.findAllByAssigneeId(assigneeId)
@@ -40,13 +40,12 @@ public class PeopleController {
         .collect(Collectors.toList()
         )
     );
-
   }
+
 
 
   public TaskDTO convertTaskDTO(Task task) {
     TaskDTO taskDTO = modelMapper.map(task, TaskDTO.class);
-    taskDTO.setAssignee(task.getAssignee().getEmail());
     return taskDTO;
   }
   public Task convertToTask(TaskDTO taskDTO) {
