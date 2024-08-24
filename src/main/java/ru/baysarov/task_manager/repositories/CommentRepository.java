@@ -3,11 +3,10 @@ package ru.baysarov.task_manager.repositories;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.baysarov.task_manager.models.Task;
+import ru.baysarov.task_manager.models.Comment;
 
 @Repository
-public interface TasksRepository extends JpaRepository<Task, Integer> {
+public interface CommentRepository extends JpaRepository<Comment,Integer> {
 
-
-  List<Task> findAllByAssigneeId(int assigneeId);
+  List<Comment> findAllByTaskId(int taskId);
 }

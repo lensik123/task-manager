@@ -2,6 +2,8 @@ package ru.baysarov.task_manager.services;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,7 @@ import ru.baysarov.task_manager.exceptions.TaskNotFoundException;
 import ru.baysarov.task_manager.exceptions.UserNotFoundException;
 import ru.baysarov.task_manager.models.Task;
 import ru.baysarov.task_manager.models.User;
-import ru.baysarov.task_manager.repositories.TasksRepository;
+import ru.baysarov.task_manager.repositories.TaskRepository;
 import ru.baysarov.task_manager.repositories.UserRepository;
 import ru.baysarov.task_manager.util.SecurityUtils;
 
@@ -20,21 +22,21 @@ import ru.baysarov.task_manager.util.SecurityUtils;
 @Transactional
 public class TasksService {
 
-  private final TasksRepository tasksRepository;
+  private final TaskRepository taskRepository;
   private final UserRepository userRepository;
 
   @Autowired
-  public TasksService(TasksRepository tasksRepository, UserRepository userRepository) {
-    this.tasksRepository = tasksRepository;
+  public TasksService(TaskRepository taskRepository, UserRepository userRepository) {
+    this.taskRepository = taskRepository;
     this.userRepository = userRepository;
   }
 
   public List<Task> findAll() {
-    return tasksRepository.findAll();
+    return taskRepository.findAll();
   }
 
   public Task findById(int id) {
-    return tasksRepository.findById(id)
+    return taskRepository.findById(id)
         .orElseThrow(() -> new TaskNotFoundException("Task with id " + id + " not found"));
   }
 
@@ -51,13 +53,13 @@ public class TasksService {
     task.setAuthor(author);
     task.setStatus(TaskStatus.WAITING);
 
-    tasksRepository.save(task);
+    taskRepository.save(task);
   }
 
 
   @Transactional
   public void delete(int id) {
-    tasksRepository.deleteById(id);
+    taskRepository.deleteById(id);
   }
 
 
@@ -69,7 +71,7 @@ public class TasksService {
     User currentUser = userRepository.findByEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException("User " + userEmail + " not found"));
 
-    Task existingTask = tasksRepository.findById(taskId)
+    Task existingTask = taskRepository.findById(taskId)
         .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found"));
 
     if (!existingTask.getAssignee().equals(currentUser) && !existingTask.getAuthor()
@@ -87,27 +89,43 @@ public class TasksService {
     }
 
     existingTask.setStatus(taskStatus);
-    tasksRepository.save(existingTask);
+    taskRepository.save(existingTask);
   }
 
   @Transactional
   public void assignTask(int taskId, int assigneeId) {
-    Task task = tasksRepository.findById(taskId)
+    Task task = taskRepository.findById(taskId)
         .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found"));
 
     User user = userRepository.findById(assigneeId)
         .orElseThrow(() -> new UserNotFoundException("User " + assigneeId + " not found"));
 
     task.setAssignee(user);
-    tasksRepository.save(task);
+    taskRepository.save(task);
   }
 
   public List<Task> findAllByAssigneeId(int assigneeId) {
-    return tasksRepository.findAllByAssigneeId(assigneeId);
+    return taskRepository.findAllByAssigneeId(assigneeId);
   }
 
   public void update(int id, Task updatedTask) {
     updatedTask.setId(id);
-    tasksRepository.save(updatedTask);
+    taskRepository.save(updatedTask);
+  }
+
+  public List<Task> findTasksByAuthorOrAssignee(Integer authorId, Integer assigneeId, int page,
+      int size) {
+    Pageable pageable = PageRequest.of(page, size);
+
+    if (authorId != null && assigneeId != null) {
+      return taskRepository.findByAuthorIdOrAssigneeId(authorId, assigneeId, pageable);
+    } else if (authorId != null) {
+      return taskRepository.findByAuthorId(authorId, pageable);
+    } else if (assigneeId != null) {
+      return taskRepository.findByAssigneeId(assigneeId, pageable);
+    } else {
+      return taskRepository.findAll();
+    }
+
   }
 }
