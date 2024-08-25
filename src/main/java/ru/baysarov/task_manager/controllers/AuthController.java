@@ -52,7 +52,6 @@ public class AuthController {
   @PostMapping("/authenticate")
   public ResponseEntity<AuthenticationResponse> authenticate(
       @RequestBody AuthenticationRequest request) {
-
     usersServIce.findByEmail(request.getEmail());
     return ResponseEntity.ok(authenticateService.register(request));
   }
