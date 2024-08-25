@@ -27,10 +27,13 @@ Task Manager API — это приложение для управления з�
 
 2. Настройте файл `application.yml` (описание ниже).
 
-3. Запустите приложение с помощью Maven:
+3. Перейдите в директорию проекта
+
+4. Запустите приложение с помощью Maven:
 
     ```bash
-    ./mvnw spring-boot:run
+    ./mvnw spring-boot:run - Для Unix-подобных систем 
+    mvnw spring-boot:run - Для windows
     ```
 
 ## Конфигурация
@@ -42,7 +45,7 @@ Task Manager API — это приложение для управления з�
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/task_manager
+    url: jdbc:postgresql://localhost:5432/your_db_name
     username: your_db_username
     password: your_db_password
     driver-class-name: org.postgresql.Driver
@@ -56,6 +59,9 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   profiles:
     active: default
+  jwt:
+    secret: your_secret_jwt_key
+
 
 
 
