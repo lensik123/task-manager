@@ -42,7 +42,7 @@ Task Manager API — это приложение для управления з�
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/task_manager
+    url: jdbc:postgresql://localhost:5432/your_db_name
     username: your_db_username
     password: your_db_password
     driver-class-name: org.postgresql.Driver
