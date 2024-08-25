@@ -45,10 +45,24 @@ public class PeopleController {
 
   public TaskDTO convertTaskDTO(Task task) {
     TaskDTO taskDTO = modelMapper.map(task, TaskDTO.class);
+
+    if (task.getAssignee() != null) {
+      taskDTO.setAssignee(task.getAssignee().getEmail());
+    } else {
+      taskDTO.setAssignee(null);
+    }
+
+    if (task.getAuthor() != null) {
+      taskDTO.setAuthor(task.getAuthor().getEmail());
+    } else {
+      taskDTO.setAuthor(null);
+    }
+
     return taskDTO;
   }
 
   public Task convertToTask(TaskDTO taskDTO) {
     return modelMapper.map(taskDTO, Task.class);
   }
+
 }

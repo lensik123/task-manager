@@ -1,5 +1,8 @@
 package ru.baysarov.task_manager.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +14,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.baysarov.task_manager.dto.AssignTaskRequest;
 import ru.baysarov.task_manager.dto.CommentDTO;
 import ru.baysarov.task_manager.dto.CommentsResponse;
@@ -23,9 +35,6 @@ import ru.baysarov.task_manager.models.Task;
 import ru.baysarov.task_manager.services.CommentsService;
 import ru.baysarov.task_manager.services.TasksService;
 import ru.baysarov.task_manager.validators.TaskValidator;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -50,7 +59,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
       @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @GetMapping()
   public TasksResponse getTasks(
@@ -70,7 +79,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Task retrieved successfully"),
       @ApiResponse(responseCode = "404", description = "Task not found"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @GetMapping("/{id}")
   public TaskDTO index(@PathVariable int id) {
@@ -81,7 +90,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Comments retrieved successfully"),
       @ApiResponse(responseCode = "404", description = "Task not found"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @GetMapping("/{id}/comments")
   public CommentsResponse getCommentsByTask(@PathVariable int id) {
@@ -97,7 +106,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Task created successfully"),
       @ApiResponse(responseCode = "400", description = "Validation errors"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @PostMapping()
   public ResponseEntity<?> createTask(@RequestBody @Valid TaskDTO taskDTO,
@@ -115,7 +124,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Comment added successfully"),
       @ApiResponse(responseCode = "400", description = "Validation errors"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @PostMapping("/{taskId}/comment")
   public ResponseEntity<?> addComment(@PathVariable int taskId,
@@ -134,10 +143,11 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Task assigned successfully"),
       @ApiResponse(responseCode = "400", description = "Invalid request"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @PatchMapping("/{id}/assignee")
-  public ResponseEntity<?> assignTask(@PathVariable int id,@RequestBody AssignTaskRequest request) {
+  public ResponseEntity<?> assignTask(@PathVariable int id,
+      @RequestBody AssignTaskRequest request) {
     tasksService.assignTask(id, request.getAssigneeId());
     return ResponseEntity.ok(HttpStatus.OK);
   }
@@ -146,7 +156,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Task status updated successfully"),
       @ApiResponse(responseCode = "400", description = "Validation errors"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @PatchMapping("/{id}/status")
   public ResponseEntity<?> updateStatus(@PathVariable int id,
@@ -161,7 +171,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Task updated successfully"),
       @ApiResponse(responseCode = "400", description = "Validation errors"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @PutMapping("/{id}")
   public ResponseEntity<?> update(@PathVariable int id,
@@ -180,7 +190,7 @@ public class TasksController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Task deleted successfully"),
       @ApiResponse(responseCode = "404", description = "Task not found"),
-      @ApiResponse(responseCode = "403",description = "Unauthorized / Invalid token")
+      @ApiResponse(responseCode = "403", description = "Unauthorized / Invalid token")
   })
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteTaskById(@PathVariable int id) {
@@ -201,7 +211,21 @@ public class TasksController {
 
   // Мапперы
   public TaskDTO convertTaskDTO(Task task) {
-    return modelMapper.map(task, TaskDTO.class);
+    TaskDTO taskDTO = modelMapper.map(task, TaskDTO.class);
+
+    if (task.getAssignee() != null) {
+      taskDTO.setAssignee(task.getAssignee().getEmail());
+    } else {
+      taskDTO.setAssignee(null);
+    }
+
+    if (task.getAuthor() != null) {
+      taskDTO.setAuthor(task.getAuthor().getEmail());
+    } else {
+      taskDTO.setAuthor(null);
+    }
+
+    return taskDTO;
   }
 
   public Task convertToTask(TaskDTO taskDTO) {

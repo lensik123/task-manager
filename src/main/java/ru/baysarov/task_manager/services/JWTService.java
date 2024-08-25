@@ -11,13 +11,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JWTService {
 
-  private static final String SECRET_KEY = "0b0e622756ab3aeb3d935ccd3410bb226675ea121eabecbc761790fb9655e0c8";
+  @Value("${spring.jwt.secret}")
+  private String SECRET_KEY;
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);

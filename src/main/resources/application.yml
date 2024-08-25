@@ -14,4 +14,6 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   profiles:
     active: default
+  jwt:
+    secret: 0b0e622756ab3aeb3d935ccd3410bb226675ea121eabecbc761790fb9655e0c8
 

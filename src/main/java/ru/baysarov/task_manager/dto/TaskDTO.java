@@ -1,5 +1,8 @@
 package ru.baysarov.task_manager.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +33,12 @@ public class TaskDTO {
   @Enumerated(EnumType.STRING)
   @Column(name = "priority")
   private TaskPriority priority;
+
+  @Schema(hidden = true)
+  private String author;
+
+  @Schema(hidden = true)
+  private String assignee;
 
 
 }
